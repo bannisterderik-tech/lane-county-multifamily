@@ -1,0 +1,554 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Lane County 2-4 Unit Rankings — May 2026</title>
+<style>
+  :root {
+    --bg: #0f1419;
+    --surface: #1a1f29;
+    --surface-2: #232a37;
+    --border: #2d3748;
+    --text: #e8eaf0;
+    --text-dim: #98a0b3;
+    --accent: #4ade80;
+    --accent-dim: #1f4d36;
+    --warn: #fbbf24;
+    --warn-dim: #4d3c14;
+    --danger: #f87171;
+    --link: #60a5fa;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  header {
+    background: linear-gradient(135deg, #1a1f29 0%, #232a37 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 24px 32px;
+  }
+  h1 { margin: 0 0 4px; font-size: 22px; font-weight: 600; letter-spacing: -0.01em; }
+  .subtitle { color: var(--text-dim); font-size: 13px; }
+
+  .container { max-width: 1500px; margin: 0 auto; padding: 24px 32px; }
+
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+  }
+  .stat-label { color: var(--text-dim); font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
+  .stat-value { font-size: 20px; font-weight: 600; }
+  .stat-value.green { color: var(--accent); }
+  .stat-value.yellow { color: var(--warn); }
+
+  h2 { font-size: 16px; font-weight: 600; margin: 28px 0 12px; }
+  h2 .count { color: var(--text-dim); font-weight: 400; font-size: 14px; margin-left: 6px; }
+
+  .top-targets {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .target-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 6px;
+    padding: 12px 14px;
+  }
+  .target-card.warm { border-left-color: var(--warn); }
+  .target-card .addr { font-weight: 600; font-size: 13px; margin-bottom: 2px; }
+  .target-card .meta { color: var(--text-dim); font-size: 11px; margin-bottom: 6px; }
+  .target-card .metrics { display: flex; gap: 12px; font-size: 12px; }
+  .target-card .metric strong { color: var(--accent); }
+  .target-card .why { font-size: 11px; color: var(--text-dim); margin-top: 6px; font-style: italic; }
+
+  .filters {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+    align-items: center;
+  }
+  .filter-label { font-size: 12px; color: var(--text-dim); margin-right: 4px; }
+  .filter-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 5px 11px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    font-family: inherit;
+  }
+  .filter-btn:hover { background: var(--surface-2); }
+  .filter-btn.active { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
+
+  .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); }
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  thead { background: var(--surface-2); position: sticky; top: 0; }
+  th {
+    text-align: left;
+    padding: 10px 12px;
+    font-weight: 600;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-dim);
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+  }
+  th:hover { color: var(--text); }
+  th.sorted { color: var(--accent); }
+  th.sorted::after { content: " ↓"; }
+  th.sorted.asc::after { content: " ↑"; }
+  td { padding: 9px 12px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  tr:last-child td { border-bottom: 0; }
+  tr:hover td { background: var(--surface-2); }
+  td.right { text-align: right; font-variant-numeric: tabular-nums; }
+  td.muted { color: var(--text-dim); }
+  td.dim { color: #666; }
+
+  .badge {
+    display: inline-block;
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    margin-left: 4px;
+  }
+  .badge.owc { background: var(--warn-dim); color: var(--warn); }
+  .badge.lease { background: #2d2447; color: #a78bfa; }
+  .badge.exch { background: #1f3349; color: #60a5fa; }
+  .badge.new { background: var(--accent-dim); color: var(--accent); }
+
+  .cap-high { color: var(--accent); font-weight: 600; }
+  .cap-med { color: var(--warn); }
+  .cap-low { color: var(--danger); }
+
+  a { color: var(--link); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  .footer { color: var(--text-dim); font-size: 11px; margin-top: 24px; text-align: center; padding: 16px; }
+
+  /* Password gate */
+  #gate {
+    position: fixed; inset: 0; z-index: 9999;
+    background: var(--bg);
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column;
+  }
+  #gate .lock-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 32px 36px;
+    max-width: 360px;
+    text-align: center;
+  }
+  #gate h3 { margin: 0 0 6px; font-size: 16px; font-weight: 600; }
+  #gate p { margin: 0 0 18px; font-size: 12px; color: var(--text-dim); }
+  #gate input {
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 14px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--text);
+    font-family: inherit;
+    text-align: center;
+    letter-spacing: 0.1em;
+  }
+  #gate input:focus { outline: none; border-color: var(--accent); }
+  #gate-err { color: var(--danger); font-size: 11px; margin-top: 8px; min-height: 14px; }
+  #app { display: none; }
+</style>
+</head>
+<body>
+
+<div id="gate">
+  <div class="lock-card">
+    <h3>The Operative Group</h3>
+    <p>Lane County multifamily deal flow — access required.</p>
+    <input id="gate-pw" type="password" placeholder="Password" autocomplete="off" autofocus />
+    <div id="gate-err"></div>
+  </div>
+</div>
+
+<div id="app">
+<header>
+  <h1>Lane County 2-4 Unit Multifamily — Investment Rankings</h1>
+  <div class="subtitle">Pulled from RMLS · May 14, 2026 · 54 active listings · Complete Lane County multifamily inventory</div>
+</header>
+
+<div class="container">
+
+  <!-- Summary -->
+  <div class="summary-grid" id="summary"></div>
+
+  <!-- Top targets -->
+  <h2>Top Cash-Flow Targets <span class="count">(Cap rate 6%+ with actual income)</span></h2>
+  <div class="top-targets" id="topCashflow"></div>
+
+  <h2>Warmest Leads <span class="count">(Seller already open to creative financing)</span></h2>
+  <div class="top-targets" id="topWarm"></div>
+
+  <!-- Main table -->
+  <h2>All Listings <span class="count" id="tableCount"></span></h2>
+  <div class="filters" id="filters">
+    <span class="filter-label">Units:</span>
+    <button class="filter-btn active" data-filter="units" data-value="all">All</button>
+    <button class="filter-btn" data-filter="units" data-value="2">2u</button>
+    <button class="filter-btn" data-filter="units" data-value="3">3u</button>
+    <button class="filter-btn" data-filter="units" data-value="4">4u</button>
+    <button class="filter-btn" data-filter="units" data-value="5plus">5u+</button>
+    <span class="filter-label" style="margin-left:16px">City:</span>
+    <button class="filter-btn active" data-filter="city" data-value="all">All</button>
+    <button class="filter-btn" data-filter="city" data-value="Eugene">Eugene</button>
+    <button class="filter-btn" data-filter="city" data-value="Springfield">Springfield</button>
+    <button class="filter-btn" data-filter="city" data-value="Cottage Grove">Cottage Grove</button>
+    <button class="filter-btn" data-filter="city" data-value="other">Other</button>
+    <span class="filter-label" style="margin-left:16px">Flags:</span>
+    <button class="filter-btn" data-filter="flag" data-value="owc">Owner Carry</button>
+    <button class="filter-btn" data-filter="flag" data-value="hasincome">Has Income</button>
+  </div>
+
+  <div class="table-wrap">
+    <table id="mainTable">
+      <thead>
+        <tr>
+          <th data-sort="rank">#</th>
+          <th data-sort="address">Address</th>
+          <th data-sort="city">City</th>
+          <th data-sort="units" class="right">Units</th>
+          <th data-sort="year" class="right">Built</th>
+          <th data-sort="price" class="right">Price</th>
+          <th data-sort="pricePerUnit" class="right">$/Unit</th>
+          <th data-sort="pricePerSqft" class="right">$/SqFt</th>
+          <th data-sort="agi" class="right">Gross Inc</th>
+          <th data-sort="noi" class="right">NOI</th>
+          <th data-sort="capRate" class="right sorted">Cap %</th>
+          <th data-sort="grm" class="right">GRM</th>
+          <th data-sort="dom" class="right">DOM</th>
+          <th data-sort="agent">Agent</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+  </div>
+
+  <div class="footer">
+    Source: RMLSweb agent full report, 5/14/2026. Cap rates and NOI reflect "Actual" figures from MLS where provided; projected income shown only when actual = 0.
+    Buyer to verify all financial details independently.
+  </div>
+</div>
+
+<script>
+const LISTINGS = [
+  {mls:"232343870", address:"1036 9th St", city:"Florence", units:2, year:2005, sqft:2560, price:635000, agi:26100, noi:19136, opex:6963, capRate:3.01, grm:24.33, dom:25, agent:"Leah Volkov", agentEmail:"leah.volkov@dore.llc", brokerage:"DORE", flags:[]},
+  {mls:"111042984", address:"2897 Game Farm Rd", city:"Springfield", units:2, year:1952, sqft:2046, price:590000, agi:51000, noi:19800, opex:31200, capRate:3.36, grm:11.57, dom:16, agent:"Stefani Myers", agentEmail:"homes@stefanimyers.com", brokerage:"Hybrid Real Estate", flags:[]},
+  {mls:"130254478", address:"1194 R St", city:"Springfield", units:4, year:1982, sqft:3604, price:629000, agi:56280, noi:45555, opex:10725, capRate:7.24, grm:11.18, dom:70, agent:"Joshua Glaspie", agentEmail:"joshfullyinvested@gmail.com", brokerage:"ICON Real Estate Group", flags:[]},
+  {mls:"613332159", address:"1180 R St", city:"Springfield", units:4, year:1982, sqft:3604, price:629000, agi:54202, noi:43477, opex:10725, capRate:6.91, grm:11.6, dom:70, agent:"Joshua Glaspie", agentEmail:"joshfullyinvested@gmail.com", brokerage:"ICON Real Estate Group", flags:[]},
+  {mls:"629704277", address:"47470 Highway 58", city:"Oakridge", units:4, year:1947, sqft:4502, price:449900, agi:42900, noi:37152, opex:5748, capRate:8.26, grm:10.49, dom:178, agent:"Naseem Hamide", agentEmail:"naseem@worksrealestate.co", brokerage:"Works Real Estate", flags:["mixed-use"]},
+  {mls:"703442714", address:"84485 Parkway Rd", city:"Pleasant Hill", units:2, year:1989, sqft:2484, price:675000, agi:0, noi:0, opex:0, capRate:null, grm:null, dom:38, agent:"Priscila Sanchez", agentEmail:"PriscilaSanchezRealtor@gmail.com", brokerage:"Coldwell Banker", flags:["vacant"]},
+  {mls:"344370290", address:"48251 E Commercial St", city:"Oakridge", units:2, year:2001, sqft:4565, price:725000, agi:0, noi:0, opex:0, capRate:null, grm:null, dom:24, agent:"Aaron Stansbury", agentEmail:"aarons@kw.com", brokerage:"Keller Williams", flags:[]},
+  {mls:"432567130", address:"796 S R St", city:"Cottage Grove", units:2, year:1979, sqft:1942, price:530000, agi:16800, noi:16800, opex:0, capRate:3.17, grm:31.55, dom:36, agent:"Jena Shaw", agentEmail:"jenashaw@houseofshawrealty.com", brokerage:"Kinected Realty", flags:[]},
+  {mls:"684971736", address:"1522 E Washington Ave", city:"Cottage Grove", units:2, year:1972, sqft:1992, price:539000, agi:15600, noi:11283, opex:4317, capRate:2.09, grm:34.55, dom:17, agent:"Bob Avery", agentEmail:"bobavery@remax.net", brokerage:"RE/MAX Integrity", flags:[]},
+  {mls:"448645088", address:"1601 E Main St", city:"Cottage Grove", units:4, year:2019, sqft:3180, price:795000, agi:0, noi:0, opex:0, capRate:null, grm:null, dom:38, agent:"Danielle Mitchell", agentEmail:"danielleandjayda@gmail.com", brokerage:"Mitchell & Associates", flags:["mixed-use"]},
+  {mls:"210904208", address:"50 S 17th St", city:"Cottage Grove", units:4, year:2022, sqft:3928, price:929900, agi:0, noi:0, opex:0, capRate:null, grm:null, dom:97, agent:"Nile Stark", agentEmail:"sold@nilestarkrealestate.com", brokerage:"RE/MAX Integrity", flags:["MUPTE","new-construction"]},
+  {mls:"234139746", address:"21620 Glaze Rd", city:"Noti", units:2, year:1964, sqft:1267, price:435000, agi:0, noi:0, opex:0, capRate:null, grm:null, dom:2, agent:"Brad Anderson", agentEmail:"bradanderson97478@gmail.com", brokerage:"Brad Anderson Real Estate", flags:["vacant","new-listing"]},
+  {mls:"105116347", address:"88558 Jameson Way", city:"Veneta", units:2, year:2022, sqft:2616, price:699000, agi:48000, noi:40000, opex:8000, capRate:5.72, grm:14.56, dom:49, agent:"Ken Martinson", agentEmail:"kenm@windermere.com", brokerage:"Windermere RE Lane County", flags:[]},
+  {mls:"494463823", address:"617 Juniper St", city:"Junction City", units:2, year:1878, sqft:3328, price:640000, agi:0, noi:0, opex:0, capRate:null, grm:null, dom:22, agent:"Ruth Kuehl", agentEmail:"Ruth@CowLLRuth.com", brokerage:"Eugene Track Town Realtors", flags:[]},
+  {mls:"247237844", address:"11766 Walnut Ave", city:"Mapleton", units:2, year:1965, sqft:1480, price:299999, agi:0, noi:0, opex:0, capRate:null, grm:null, dom:6, agent:"Gina Bebek", agentEmail:"beachbebeks@gmail.com", brokerage:"Realty One Group", flags:[]},
+  {mls:"733436745", address:"421/425 S 58th St", city:"Springfield", units:2, year:1998, sqft:2520, price:480000, agi:30020, noi:30020, opex:0, capRate:6.25, grm:15.99, dom:111, agent:"Stephen Nielsen", agentEmail:"eugenesteve@live.com", brokerage:"Keystone Real Estate", flags:["data-issue"]},
+  {mls:"268522733", address:"231/233 S 41st Pl", city:"Springfield", units:2, year:2026, sqft:2680, price:650000, agi:0, noi:0, opex:0, capRate:null, grm:null, dom:35, agent:"Jamie Paddock", agentEmail:"jamie@JamiePaddock.com", brokerage:"Elite Realty Professionals", flags:["new-construction"]},
+  {mls:"681996898", address:"5495 A Units 69-72 St", city:"Springfield", units:4, year:1979, sqft:3372, price:675000, agi:37200, noi:25203, opex:11997, capRate:3.73, grm:18.15, dom:241, agent:"Melony Burnett", agentEmail:"melonyburnett@gmail.com", brokerage:"Keller Williams", flags:["1031"]},
+  {mls:"659409708", address:"168 S 63rd St", city:"Springfield", units:4, year:1979, sqft:5948, price:720000, agi:60720, noi:40183, opex:19322, capRate:5.58, grm:11.86, dom:30, agent:"Ian Crist", agentEmail:"icrist@bridgecreekrealty.com", brokerage:"Bridge Creek Realty", flags:[]},
+  {mls:"317967431", address:"32781 E Pearl St", city:"Eugene", units:3, year:1981, sqft:3280, price:649900, agi:50100, noi:44830, opex:5270, capRate:6.9, grm:12.97, dom:47, agent:"Alison Myers", agentEmail:"alison@alisonmyersrealty.com", brokerage:"Lux Realty Group", flags:[]},
+  {mls:"189946520", address:"1880 Lake Cove Ave", city:"Eugene", units:2, year:1998, sqft:2256, price:609000, agi:40140, noi:24330, opex:15810, capRate:4, grm:15.17, dom:282, agent:"Kristin Clark", agentEmail:"kristinclark@johnlscott.com", brokerage:"John L. Scott", flags:["1031"]},
+  {mls:"150011871", address:"2063 Lake Wind Dr", city:"Eugene", units:2, year:2004, sqft:2708, price:715500, agi:41400, noi:24677, opex:16723, capRate:3.45, grm:17.28, dom:300, agent:"Kristin Clark", agentEmail:"kristinclark@johnlscott.com", brokerage:"John L. Scott", flags:["1031"]},
+  {mls:"471016492", address:"1798 Gilham Rd", city:"Eugene", units:2, year:1970, sqft:2385, price:600000, agi:46680, noi:37801, opex:8879, capRate:6.3, grm:12.85, dom:5, agent:"Chuck Wetherald", agentEmail:"Chuck@WorthlandRealEstate.com", brokerage:"Worthland Real Estate", flags:["lease-option"]},
+  {mls:"176388653", address:"1826 Mill St", city:"Eugene", units:2, year:1930, sqft:2208, price:519000, agi:0, noi:0, opex:0, capRate:null, grm:null, dom:63, agent:"Joshua Glaspie", agentEmail:"joshfullyinvested@gmail.com", brokerage:"ICON Real Estate Group", flags:["owc","vacant"]},
+  {mls:"784436767", address:"1492 Pearl St", city:"Eugene", units:3, year:1920, sqft:2084, price:565000, agi:0, noi:0, opex:0, capRate:null, grm:null, dom:247, agent:"Koalani Roberts", agentEmail:"koa@windermere.com", brokerage:"Windermere RE Lane County", flags:[]},
+  {mls:"200074803", address:"344 E 14th Ave", city:"Eugene", units:2, year:1900, sqft:2860, price:829000, agi:59744, noi:46344, opex:13400, capRate:5.59, grm:13.88, dom:71, agent:"James St Clair", agentEmail:"team.stclairproperties@gmail.com", brokerage:"St Clair Properties", flags:[]},
+  {mls:"326023159", address:"1147 W 11th Aly", city:"Eugene", units:2, year:1977, sqft:1664, price:449000, agi:21600, noi:17385, opex:4215, capRate:3.87, grm:20.79, dom:14, agent:"Joshua Glaspie", agentEmail:"joshfullyinvested@gmail.com", brokerage:"ICON Real Estate Group", flags:[]},
+  {mls:"357840694", address:"561 Madison St", city:"Eugene", units:2, year:1918, sqft:1514, price:399000, agi:36480, noi:33948, opex:2532, capRate:8.51, grm:10.94, dom:352, agent:"Kit Sixel", agentEmail:"kit@sixelre.com", brokerage:"Sixel Real Estate", flags:[]},
+  {mls:"726431955", address:"577 Madison St", city:"Eugene", units:2, year:1918, sqft:1574, price:399000, agi:34200, noi:31668, opex:2532, capRate:7.94, grm:11.67, dom:73, agent:"Kit Sixel", agentEmail:"kit@sixelre.com", brokerage:"Sixel Real Estate", flags:[]},
+  {mls:"110205189", address:"2064 W 17th Ave (4-plex)", city:"Eugene", units:4, year:1960, sqft:1806, price:525000, agi:50829, noi:26520, opex:24309, capRate:5.05, grm:10.33, dom:182, agent:"Darren Stone", agentEmail:"darren@jenningsgroup.com", brokerage:"Jennings Group", flags:["portfolio"]},
+  {mls:"194065621", address:"623 W 18th Ave", city:"Eugene", units:2, year:1997, sqft:2480, price:560000, agi:32400, noi:23880, opex:8520, capRate:4.26, grm:17.28, dom:50, agent:"Amy Jackson", agentEmail:"amymjacksonrealtor@gmail.com", brokerage:"Premiere Property Group", flags:[]},
+  {mls:"278588965", address:"1735 Cleveland Pl (4-plex)", city:"Eugene", units:4, year:1960, sqft:2322, price:585000, agi:52080, noi:30283, opex:21797, capRate:5.18, grm:11.23, dom:182, agent:"Darren Stone", agentEmail:"darren@jenningsgroup.com", brokerage:"Jennings Group", flags:["portfolio"]},
+  {mls:"612706091", address:"1445 W 11th Ave", city:"Eugene", units:2, year:1927, sqft:2682, price:599900, agi:0, noi:0, opex:0, capRate:null, grm:null, dom:219, agent:"Amy Dean", agentEmail:"amydeanrealtor@gmail.com", brokerage:"Amy Dean Real Estate", flags:["upzone"]},
+  {mls:"110904229", address:"561+577 Madison (combined)", city:"Eugene", units:4, year:1918, sqft:3792, price:750000, agi:70680, noi:65680, opex:5000, capRate:8.76, grm:10.61, dom:73, agent:"Kit Sixel", agentEmail:"kit@sixelre.com", brokerage:"Sixel Real Estate", flags:["package"]},
+  {mls:"281103900", address:"172 Norman Ave", city:"Eugene", units:2, year:1968, sqft:2000, price:549900, agi:35400, noi:30086, opex:5314, capRate:5.47, grm:15.53, dom:94, agent:"Gwendolynn Herndon", agentEmail:"refinedrealproperty@gmail.com", brokerage:"MORE Realty", flags:[]},
+  {mls:"437110225", address:"820 Park Ter", city:"Eugene", units:2, year:1994, sqft:2989, price:775000, agi:16200, noi:14455, opex:8854, capRate:1.87, grm:47.84, dom:268, agent:"Melissa Gutierrez", agentEmail:"melissagutierrez@bhhsnwrep.com", brokerage:"Berkshire Hathaway", flags:[]},
+  {mls:"475174291", address:"325 River Rd", city:"Eugene", units:2, year:1929, sqft:3746, price:795000, agi:59040, noi:47040, opex:12000, capRate:5.92, grm:13.47, dom:65, agent:"Koalani Roberts", agentEmail:"koa@windermere.com", brokerage:"Windermere RE Lane County", flags:["owc","C2"]},
+  {mls:"383689519", address:"3542/3544 E St", city:"Springfield", units:2, year:1972, sqft:1646, price:425000, agi:23100, noi:19611, opex:3489, capRate:4.61, grm:18.4, dom:41, agent:"Kit Sixel", agentEmail:"kit@sixelre.com", brokerage:"Sixel Real Estate", flags:[]},
+  {mls:"454708820", address:"650/656 F St", city:"Springfield", units:2, year:1940, sqft:1632, price:425000, agi:21108, noi:19419, opex:4582, capRate:4.57, grm:20.13, dom:6, agent:"A.D. Smith", agentEmail:"adsmith@kw.com", brokerage:"Keller Williams", flags:["lot-split"]},
+  {mls:"555931783", address:"1340/1342 Q St", city:"Springfield", units:2, year:1977, sqft:2145, price:499900, agi:39792, noi:33040, opex:6752, capRate:6.61, grm:12.56, dom:9, agent:"Sandra Boyst", agentEmail:"TheBoystTeam@gmail.com", brokerage:"ICON Real Estate Group", flags:["1031"]},
+  {mls:"697388105", address:"236/238 S 35th St", city:"Springfield", units:2, year:1973, sqft:1648, price:535000, agi:0, noi:0, opex:0, capRate:null, grm:null, dom:14, agent:"A.D. Smith", agentEmail:"adsmith@kw.com", brokerage:"Keller Williams", flags:["vacant"]},
+  {mls:"226234377", address:"602 Kelly Blvd", city:"Springfield", units:2, year:1971, sqft:3608, price:545000, agi:35301, noi:23370, opex:11964, capRate:4.29, grm:15.44, dom:35, agent:"Sherman Terry", agentEmail:"shermanterry765@gmail.com", brokerage:"Terry Group Realty", flags:[]},
+  {mls:"236528166", address:"455 S 38th St", city:"Springfield", units:2, year:1942, sqft:1500, price:580826, agi:37080, noi:34279, opex:0, capRate:5.9, grm:15.66, dom:151, agent:"Tim Duncan", agentEmail:"tim@timduncanre.com", brokerage:"Tim Duncan Real Estate", flags:["upzone"]},
+  {mls:"679986234", address:"807 E St", city:"Springfield", units:2, year:1920, sqft:1750, price:595000, agi:32400, noi:26500, opex:5900, capRate:4.45, grm:18.36, dom:20, agent:"Julie Sonam", agentEmail:"julie@hearthstonere.com", brokerage:"Hearthstone Real Estate", flags:[]},
+  {mls:"637475381", address:"207 W D St", city:"Springfield", units:2, year:1962, sqft:2688, price:615000, agi:48000, noi:0, opex:0, capRate:null, grm:12.81, dom:143, agent:"Merrill Moore", agentEmail:"merrill.equinox@gmail.com", brokerage:"BHG Equinox", flags:["data-issue"]},
+  {mls:"203340873", address:"1171/1173 S 43rd Pl", city:"Springfield", units:2, year:2024, sqft:3107, price:735000, agi:57600, noi:46136, opex:11464, capRate:6.28, grm:12.76, dom:41, agent:"Lucas Walker", agentEmail:"lucas@cegrouprealestate.com", brokerage:"Triple Oaks Realty", flags:["new-construction"]},
+  {mls:"321897970", address:"93099 Marcola Rd", city:"Marcola", units:3, year:1968, sqft:3200, price:677000, agi:54000, noi:50000, opex:4000, capRate:7.39, grm:12.54, dom:241, agent:"Kelly Cooley", agentEmail:"kellyc@windermere.com", brokerage:"Windermere RE Lane County", flags:["owc","riverfront"]},
+  {mls:"726412931", address:"655 Monroe St", city:"Eugene", units:2, year:1890, sqft:2424, price:475000, agi:48521, noi:29046, opex:19475, capRate:6.11, grm:9.79, dom:55, agent:"Daniel Gandee", agentEmail:"dan@theoperativegroup.com", brokerage:"Real Broker", flags:["team","str"]},
+  {mls:"417429576", address:"1566 Laura St", city:"Springfield", units:2, year:1930, sqft:544, price:295000, agi:10200, noi:10200, opex:1139, capRate:3.46, grm:28.92, dom:35, agent:"Daniel Gandee", agentEmail:"dan@theoperativegroup.com", brokerage:"Real Broker", flags:["team","owc"]},
+  {mls:"353491641", address:"215 Smith Loop", city:"Springfield", units:2, year:1993, sqft:2268, price:525000, agi:35820, noi:31339, opex:4481, capRate:5.97, grm:14.66, dom:13, agent:"Daniel Gandee", agentEmail:"dan@theoperativegroup.com", brokerage:"Real Broker", flags:["team","owc"]},
+  {mls:"487334369", address:"1905 17th St (2 duplexes)", city:"Springfield", units:4, year:1999, sqft:3744, price:959900, agi:75000, noi:60000, opex:15000, capRate:6.25, grm:12.8, dom:216, agent:"Derik Bannister", agentEmail:"derik@theoperativegroup.com", brokerage:"Real Broker", flags:["mine","owc"]},
+  {mls:"798615588", address:"2070 W 16th Way", city:"Eugene", units:5, year:1960, sqft:2900, price:575000, agi:45000, noi:10970, opex:34030, capRate:7.83, grm:12.78, dom:179, agent:"David Miller", agentEmail:"dave@synergyhomebrokers.com", brokerage:"Synergy Home Brokers", flags:["data-issue"]},
+  {mls:"306601542", address:"527 Monroe St", city:"Eugene", units:6, year:1912, sqft:3500, price:995000, agi:84600, noi:80589, opex:4011, capRate:8.1, grm:11.76, dom:40, agent:"Kit Sixel", agentEmail:"kit@sixelre.com", brokerage:"Sixel Real Estate", flags:[]},
+  {mls:"222960224", address:"32 Marion Ln", city:"Eugene", units:0, year:1962, sqft:2675, price:450000, agi:0, noi:0, opex:0, capRate:null, grm:null, dom:226, agent:"Mark Gray", agentEmail:"mark@buyeugenehomes.com", brokerage:"Next Phase Realty", flags:["owc","mf-potential"]},
+];
+
+const FLAG_LABELS = {
+  "owc": { label: "Owner Carry", cls: "owc" },
+  "lease-option": { label: "Lease Option", cls: "lease" },
+  "1031": { label: "1031", cls: "exch" },
+  "new-construction": { label: "New", cls: "new" },
+  "vacant": { label: "Vacant", cls: "" },
+  "MUPTE": { label: "MUPTE", cls: "new" },
+  "mixed-use": { label: "Mixed-Use", cls: "" },
+  "package": { label: "Package", cls: "" },
+  "portfolio": { label: "Portfolio", cls: "" },
+  "upzone": { label: "Upzone", cls: "" },
+  "lot-split": { label: "Lot Split", cls: "" },
+  "C2": { label: "C2", cls: "" },
+  "riverfront": { label: "Riverfront", cls: "" },
+  "new-listing": { label: "New Listing", cls: "new" },
+  "data-issue": { label: "Data Issue", cls: "" },
+  "mine": { label: "Your Listing", cls: "exch" },
+  "team": { label: "Team", cls: "exch" },
+  "str": { label: "STR Income", cls: "" },
+  "mf-potential": { label: "MF Potential", cls: "" }
+};
+
+// Compute derived metrics
+LISTINGS.forEach(l => {
+  l.pricePerUnit = Math.round(l.price / l.units);
+  l.pricePerSqft = l.sqft ? Math.round(l.price / l.sqft) : null;
+});
+
+const fmt$ = v => v == null ? "—" : "$" + Math.round(v).toLocaleString();
+const fmtPct = v => v == null ? "—" : v.toFixed(2) + "%";
+const fmtGrm = v => v == null ? "—" : v.toFixed(1);
+
+// === Summary ===
+const withCap = LISTINGS.filter(l => l.capRate != null && l.capRate > 0);
+const total = LISTINGS.length;
+const avgCap = withCap.reduce((s,l) => s + l.capRate, 0) / withCap.length;
+const median = arr => { const s = [...arr].sort((a,b)=>a-b); return s[Math.floor(s.length/2)]; };
+const medPrice = median(LISTINGS.map(l => l.price));
+const owcCount = LISTINGS.filter(l => l.flags.includes("owc") || l.flags.includes("lease-option")).length;
+
+document.getElementById("summary").innerHTML = `
+  <div class="stat-card"><div class="stat-label">Total Listings</div><div class="stat-value">${total}</div></div>
+  <div class="stat-card"><div class="stat-label">Median Price</div><div class="stat-value">${fmt$(medPrice)}</div></div>
+  <div class="stat-card"><div class="stat-label">Avg Cap (w/ income)</div><div class="stat-value green">${avgCap.toFixed(2)}%</div></div>
+  <div class="stat-card"><div class="stat-label">Has Actual Income</div><div class="stat-value">${withCap.length} / ${total}</div></div>
+  <div class="stat-card"><div class="stat-label">Owner Carry / Lease Opt</div><div class="stat-value yellow">${owcCount}</div></div>
+`;
+
+// === Top cash-flow ===
+const topCashflow = [...withCap].filter(l => l.capRate >= 6).sort((a,b) => b.capRate - a.capRate);
+document.getElementById("topCashflow").innerHTML = topCashflow.map(l => `
+  <div class="target-card">
+    <div class="addr">${l.address}, ${l.city}</div>
+    <div class="meta">${l.units}u · ${fmt$(l.price)} · ${l.year}</div>
+    <div class="metrics">
+      <div class="metric">Cap <strong>${fmtPct(l.capRate)}</strong></div>
+      <div class="metric">NOI <strong>${fmt$(l.noi)}</strong></div>
+      <div class="metric">$/Unit <strong>${fmt$(l.pricePerUnit)}</strong></div>
+    </div>
+    <div class="why">${l.agent} · ${l.brokerage}</div>
+  </div>
+`).join("");
+
+// === Warmest leads ===
+const warm = LISTINGS.filter(l =>
+  l.flags.includes("owc") || l.flags.includes("lease-option")
+).sort((a,b) => (b.capRate||0) - (a.capRate||0));
+document.getElementById("topWarm").innerHTML = warm.map(l => `
+  <div class="target-card warm">
+    <div class="addr">${l.address}, ${l.city}</div>
+    <div class="meta">${l.units}u · ${fmt$(l.price)} · Cap ${fmtPct(l.capRate)}</div>
+    <div class="metrics">
+      <div class="metric">${l.flags.includes("owc") ? "Owner Carry on MLS" : "Lease Option listed"}</div>
+    </div>
+    <div class="why">${l.agent} · ${l.agentEmail}</div>
+  </div>
+`).join("");
+
+// === Main table ===
+const tbody = document.getElementById("tableBody");
+let sortKey = "capRate";
+let sortDir = "desc";
+let filters = { units: "all", city: "all", flag: null };
+
+function render() {
+  let rows = LISTINGS.filter(l => {
+    if (filters.units !== "all") {
+      if (filters.units === "5plus") { if (l.units < 5) return false; }
+      else if (l.units !== parseInt(filters.units)) return false;
+    }
+    if (filters.city !== "all") {
+      if (filters.city === "other") {
+        if (["Eugene","Springfield","Cottage Grove"].includes(l.city)) return false;
+      } else if (l.city !== filters.city) return false;
+    }
+    if (filters.flag === "owc" && !l.flags.includes("owc") && !l.flags.includes("lease-option")) return false;
+    if (filters.flag === "hasincome" && (l.capRate == null || l.capRate === 0)) return false;
+    return true;
+  });
+
+  rows.sort((a,b) => {
+    let va = a[sortKey], vb = b[sortKey];
+    // nulls always last
+    if (va == null && vb == null) return 0;
+    if (va == null) return 1;
+    if (vb == null) return -1;
+    if (typeof va === "string") return sortDir === "asc" ? va.localeCompare(vb) : vb.localeCompare(va);
+    return sortDir === "asc" ? va - vb : vb - va;
+  });
+
+  document.getElementById("tableCount").textContent = `(${rows.length} shown)`;
+
+  tbody.innerHTML = rows.map((l, i) => {
+    const capClass = l.capRate == null ? "dim" : (l.capRate >= 6 ? "cap-high" : (l.capRate >= 4.5 ? "cap-med" : "cap-low"));
+    const badges = l.flags.map(f => {
+      const def = FLAG_LABELS[f];
+      if (!def) return "";
+      return `<span class="badge ${def.cls}">${def.label}</span>`;
+    }).join("");
+    return `
+      <tr>
+        <td class="muted right">${i+1}</td>
+        <td><strong>${l.address}</strong>${badges}</td>
+        <td>${l.city}</td>
+        <td class="right">${l.units}</td>
+        <td class="right muted">${l.year}</td>
+        <td class="right">${fmt$(l.price)}</td>
+        <td class="right muted">${fmt$(l.pricePerUnit)}</td>
+        <td class="right muted">${l.pricePerSqft ? "$"+l.pricePerSqft : "—"}</td>
+        <td class="right">${l.agi ? fmt$(l.agi) : "—"}</td>
+        <td class="right">${l.noi ? fmt$(l.noi) : "—"}</td>
+        <td class="right ${capClass}">${fmtPct(l.capRate)}</td>
+        <td class="right muted">${fmtGrm(l.grm)}</td>
+        <td class="right muted">${l.dom}</td>
+        <td><a href="mailto:${l.agentEmail}">${l.agent}</a></td>
+      </tr>
+    `;
+  }).join("");
+
+  // Update sort indicator
+  document.querySelectorAll("th").forEach(th => {
+    th.classList.remove("sorted", "asc");
+    if (th.dataset.sort === sortKey) {
+      th.classList.add("sorted");
+      if (sortDir === "asc") th.classList.add("asc");
+    }
+  });
+}
+
+// Sort handlers
+document.querySelectorAll("th[data-sort]").forEach(th => {
+  th.addEventListener("click", () => {
+    const key = th.dataset.sort;
+    if (sortKey === key) {
+      sortDir = sortDir === "asc" ? "desc" : "asc";
+    } else {
+      sortKey = key;
+      // sensible defaults: numeric desc, strings asc
+      const sample = LISTINGS[0][key];
+      sortDir = typeof sample === "number" ? "desc" : "asc";
+    }
+    render();
+  });
+});
+
+// Filter handlers
+document.querySelectorAll(".filter-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const f = btn.dataset.filter;
+    const v = btn.dataset.value;
+    if (f === "flag") {
+      filters.flag = filters.flag === v ? null : v;
+      document.querySelectorAll(`[data-filter="flag"]`).forEach(b => {
+        b.classList.toggle("active", b.dataset.value === filters.flag);
+      });
+    } else {
+      filters[f] = v;
+      document.querySelectorAll(`[data-filter="${f}"]`).forEach(b => {
+        b.classList.toggle("active", b.dataset.value === v);
+      });
+    }
+    render();
+  });
+});
+
+render();
+</script>
+
+</div><!-- /#app -->
+
+<script>
+// Soft password gate. Not real security — anyone can read this source.
+(function() {
+  const TARGET = "85cee3eb2be2422b123657b81330412dd8c558fbc83d18fce3e15526d590d879";
+  const gate = document.getElementById("gate");
+  const app = document.getElementById("app");
+  const input = document.getElementById("gate-pw");
+  const err = document.getElementById("gate-err");
+
+  function unlock() {
+    sessionStorage.setItem("tog-access", "1");
+    gate.style.display = "none";
+    app.style.display = "block";
+  }
+
+  async function sha256(s) {
+    const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s));
+    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
+  }
+
+  if (sessionStorage.getItem("tog-access") === "1") {
+    unlock();
+    return;
+  }
+
+  input.addEventListener("keydown", async (e) => {
+    if (e.key !== "Enter") return;
+    const h = await sha256(input.value);
+    if (h === TARGET) {
+      err.textContent = "";
+      unlock();
+    } else {
+      err.textContent = "Incorrect password";
+      input.select();
+    }
+  });
+})();
+</script>
+
+</body>
+</html>
