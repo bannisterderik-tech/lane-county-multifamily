@@ -172,6 +172,8 @@
   .tracker-card.declined { border-left-color: var(--danger); opacity: 0.75; }
   .tracker-card .tc-addr { font-weight: 600; font-size: 12.5px; }
   .tracker-card .tc-agent { color: var(--text-dim); font-size: 11px; margin: 2px 0 6px; }
+  .tracker-card .tc-terms { background: var(--accent-dim); color: var(--accent); padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; margin: 4px 0 6px; display: inline-block; }
+  .tracker-card.open .tc-terms { background: var(--warn-dim); color: var(--warn); }
   .tracker-card .tc-note { font-size: 11.5px; line-height: 1.45; }
 
   .cap-high { color: var(--accent); font-weight: 600; }
@@ -231,7 +233,7 @@
 <div id="app">
 <header>
   <h1>Lane County 2-4 Unit Multifamily — Investment Rankings</h1>
-  <div class="subtitle">Pulled from RMLS · May 14, 2026 · 54 active listings · Outreach updated May 15</div>
+  <div class="subtitle">Pulled from RMLS · May 14, 2026 · 54 active listings · Outreach updated May 15 (afternoon) · 8 sellers willing to carry</div>
 </header>
 
 <div class="container">
@@ -402,49 +404,54 @@ const FLAG_LABELS = {
 
 // Outreach response tracker (keyed by lowercase agent email)
 const RESPONSES = {
-  // Positive / actively pursuing
-  "alison@alisonmyersrealty.com": {status:"positive", note:"Sellers open to seller carry at 'fair market terms' — not low-down/low-rate. Wants LOI. Follow-up asking for rents, OpEx, condition, target terms."},
-  "koa@windermere.com": {status:"positive", note:"1492 Pearl: seller is a musician who doesn't want to be a landlord — likely carry with decent down + monthly. 325 River Rd: ~$650k down to clear estate, short carry possible. Showings May 24+."},
-  "chuck@worthlandrealestate.com": {status:"positive", note:"'Worth looking at. Send LOI after preview.' 20% down asked before. Talk to Dan who walked it. Follow-up sent asking for rents/OpEx/condition/terms."},
-  "kit@sixelre.com": {status:"positive", note:"3542 E St: seller WILL carry 1-yr at 7%, $50k min down (cashing out for assisted-living waitlist). Whiteaker Madison: NO carry. Follow-up asking for rents, OpEx, condition, term flexibility."},
-  // Open but restrictive
-  "amydeanrealtor@gmail.com": {status:"open", note:"Open to carry BUT very short term (1 yr or less) and 33% down minimum. Tight but possibly workable on right structure."},
-  // Pending seller conversation
-  "aarons@kw.com": {status:"pending", note:"Meeting with seller tomorrow — will discuss carry. Awaiting update."},
-  "eugenesteve@live.com": {status:"pending", note:"Will check with seller on owner carry. Awaiting update."},
-  // Declined
-  "melissagutierrez@bhhsnwrep.com": {status:"declined", note:"Seller declined directly."},
-  "kristinclark@johnlscott.com": {status:"declined", note:"Seller previously approached with same scenario, declined."},
-  "jenashaw@houseofshawrealty.com": {status:"declined", note:"Seller using VA loan on next purchase. Jena asked about buyer's other financing options."},
-  "ruth@cowllruth.com": {status:"declined", note:"Seller needs the cash, cannot finance."},
-  "beachbebeks@gmail.com": {status:"declined", note:"Sellers must sell outright per daughter (and Gina)."},
-  // Sent, no reply yet
-  "leah.volkov@dore.llc": {status:"sent"},
-  "homes@stefanimyers.com": {status:"sent"},
-  "naseem@worksrealestate.co": {status:"sent"},
-  "priscilasanchezrealtor@gmail.com": {status:"sent"},
-  "bobavery@remax.net": {status:"sent"},
-  "danielleandjayda@gmail.com": {status:"sent"},
-  "sold@nilestarkrealestate.com": {status:"sent"},
-  "bradanderson97478@gmail.com": {status:"sent"},
-  "kenm@windermere.com": {status:"sent"},
-  "jamie@jamiepaddock.com": {status:"sent"},
-  "melonyburnett@gmail.com": {status:"sent"},
-  "icrist@bridgecreekrealty.com": {status:"sent"},
-  "team.stclairproperties@gmail.com": {status:"sent"},
-  "darren@jenningsgroup.com": {status:"sent"},
-  "refinedrealproperty@gmail.com": {status:"sent"},
-  // Drafts still in folder, not yet sent
-  "kellyc@windermere.com": {status:"draft", note:"Marcola — owner carry already on MLS. Send next."},
-  "amymjacksonrealtor@gmail.com": {status:"draft"},
-  "joshfullyinvested@gmail.com": {status:"draft", note:"4 listings — Mill St already has owner carry on MLS."},
-  "adsmith@kw.com": {status:"draft"},
-  "theboystteam@gmail.com": {status:"draft"},
-  "shermanterry765@gmail.com": {status:"draft"},
-  "tim@timduncanre.com": {status:"draft"},
-  "julie@hearthstonere.com": {status:"draft"},
-  "merrill.equinox@gmail.com": {status:"draft"},
-  "lucas@cegrouprealestate.com": {status:"draft"}
+  // === POSITIVE: explicit terms quoted ===
+  "kellyc@windermere.com": {status:"positive", terms:"30% down, 6% interest, 30-yr amort, 5-yr balloon", note:"Seller wants 30% down ($203k), 6%, 30-yr amort, due in 5. Wants offer or showing. STRONGEST LEAD."},
+  "kit@sixelre.com": {status:"positive", terms:"$50k min down (or $100k for 18mo), 7% interest-only ~$1,300-1,500/mo", note:"3542 E St ONLY (Whiteaker = no). $50k min down @ 7%, 1-yr balloon — or $100k → 18 months. Interest-only. Fixed-term tenants thru 3/2027 & 6/2027. No deferred maint. Excellent condition. Seller pays tax/ins, tenants pay utilities."},
+  "chuck@worthlandrealestate.com": {status:"positive", terms:"20% down (per prior asks)", note:"'Worth looking at. Send me an LOI after preview.' 20% down asked before. Talk to Dan who previewed. Lease option also in MLS terms."},
+  "merrill.equinox@gmail.com": {status:"positive", terms:"In negotiation — buyer proposed 20% / 5% / 10-yr balloon", note:"Actively engaged. Asked about down + keeping tenants. Buyer's standard offer: 20% down, 5% interest, 10-yr balloon — open to negotiation."},
+  "alison@alisonmyersrealty.com": {status:"positive", terms:"'Fair market terms' — call requested", note:"Sellers open at fair market terms. Wants Derik to call. Reasonable expectations — won't accept minimal-down/low-rate gymnastics."},
+  "koa@windermere.com": {status:"positive", terms:"1492 Pearl: decent down + decent monthly. 325 River Rd: ~$650k down + ~1yr carry on balance", note:"BOTH listings open. Pearl seller is a musician who doesn't want to be a landlord. River Rd has packrat tenant w/ life tenancy + deferred maint. Sending more data per property. Showings May 24+."},
+  "bob.avery@integrityagents.com": {status:"positive", terms:"Big enough down + high enough interest rate + short balloon", note:"Sellers wanted to cash out, but Bob will present LOI. Needs structure that 'exceeds their cost' (likely refi cost). Worth submitting an offer."},
+
+  // === OPEN BUT RESTRICTIVE ===
+  "amydeanrealtor@gmail.com": {status:"open", terms:"33% down minimum, ≤1 yr term", note:"Open but tight. Workable if buyer has the down and the refi plan."},
+
+  // === PENDING SELLER CONVERSATION ===
+  "aarons@kw.com": {status:"pending", note:"Had meeting with seller Friday — awaiting update."},
+  "eugenesteve@live.com": {status:"pending", note:"Will check with seller on owner carry — awaiting update."},
+
+  // === DECLINED ===
+  "melissagutierrez@bhhsnwrep.com": {status:"declined", note:"820 Park Ter — Seller declined."},
+  "kristinclark@johnlscott.com": {status:"declined", note:"Lake Shore Estates — Seller has been approached before, declined."},
+  "jenashaw@houseofshawrealty.com": {status:"declined", note:"796 S R St — Seller using VA loan on next purchase, can't carry."},
+  "ruth@cowllruth.com": {status:"declined", note:"617 Juniper — Seller needs the cash."},
+  "beachbebeks@gmail.com": {status:"declined", note:"11766 Walnut — Sellers must sell outright."},
+  "shermanterry765@gmail.com": {status:"declined", note:"602 Kelly Blvd — 'He won't carry.'"},
+  "melonyburnett@gmail.com": {status:"declined", note:"5495 A Units — Seller's 1031 plans preclude carry."},
+  "julie@hearthstonere.com": {status:"declined", note:"807 E St — Sellers must sell, unable to carry."},
+
+  // === SENT — FOLLOW-UP BUMP NOW IN DRAFTS ===
+  "leah.volkov@dore.llc": {status:"sent", note:"No reply. Follow-up bump drafted."},
+  "homes@stefanimyers.com": {status:"sent", note:"No reply. Follow-up bump drafted."},
+  "naseem@worksrealestate.co": {status:"sent", note:"No reply. Follow-up bump drafted."},
+  "priscilasanchezrealtor@gmail.com": {status:"sent", note:"No reply. Follow-up bump drafted."},
+  "danielleandjayda@gmail.com": {status:"sent", note:"No reply. Follow-up bump drafted."},
+  "sold@nilestarkrealestate.com": {status:"sent", note:"No reply. Follow-up bump drafted."},
+  "bradanderson97478@gmail.com": {status:"sent", note:"No reply. Follow-up bump drafted."},
+  "kenm@windermere.com": {status:"sent", note:"No reply. Follow-up bump drafted."},
+  "jamie@jamiepaddock.com": {status:"sent", note:"No reply. Follow-up bump drafted."},
+  "icrist@bridgecreekrealty.com": {status:"sent", note:"No reply. Follow-up bump drafted."},
+  "team.stclairproperties@gmail.com": {status:"sent", note:"Anton OOO until 5/21 (auto-reply). Follow-up to James drafted."},
+  "darren@jenningsgroup.com": {status:"sent", note:"No reply. Follow-up bump drafted."},
+  "refinedrealproperty@gmail.com": {status:"sent", note:"No reply. Follow-up bump drafted."},
+
+  // === DRAFTS STILL IN FOLDER — NOT YET SENT ===
+  "amymjacksonrealtor@gmail.com": {status:"draft", note:"623 W 18th — initial outreach draft pending."},
+  "joshfullyinvested@gmail.com": {status:"draft", note:"4 listings (Mill St has owner carry on MLS). Initial outreach draft pending."},
+  "adsmith@kw.com": {status:"draft", note:"650/656 F St + 236/238 S 35th. Draft pending."},
+  "theboystteam@gmail.com": {status:"draft", note:"1340/1342 Q St. Draft pending."},
+  "tim@timduncanre.com": {status:"draft", note:"455 S 38th. Draft pending."},
+  "lucas@cegrouprealestate.com": {status:"draft", note:"1171/1173 S 43rd Pl. Draft pending."}
 };
 
 const STATUS_LABELS = {
@@ -498,8 +505,9 @@ document.getElementById("summary").innerHTML = `
 function renderTrackerCard(l, r) {
   return `
     <div class="tracker-card ${r.status}">
-      <div class="tc-addr">${l.address}<span style="color:var(--text-dim);font-weight:400;font-size:11px;"> · ${l.city}</span></div>
+      <div class="tc-addr">${l.address}<span style="color:var(--text-dim);font-weight:400;font-size:11px;"> · ${l.city} · ${fmt$(l.price)}</span></div>
       <div class="tc-agent">${l.agent} · <a href="tel:${l.agentPhone}">${l.agentPhone}</a> · <a href="mailto:${l.agentEmail}">${l.agentEmail}</a></div>
+      ${r.terms ? `<div class="tc-terms">📋 ${r.terms}</div>` : ""}
       ${r.note ? `<div class="tc-note">${r.note}</div>` : ""}
     </div>
   `;
